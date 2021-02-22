@@ -1,4 +1,4 @@
-﻿@model ContosoUniversity.Data.Entities.Student
+﻿@model ContosoUniversity.DTOs.StudentDTO
 
 @{
     ViewData["Title"] = "Details";
@@ -22,9 +22,6 @@
         </dt>
         <dd class="col-sm-10">
             @Html.DisplayFor(model => model.FirstMidName)
-        </dd>
-        <dd class="col-sm-12">
-            @Html.DisplayFor(model => model.FullName)
         </dd>
         <dt class="col-sm-2">
             @Html.DisplayNameFor(model => model.EnrollmentDate)

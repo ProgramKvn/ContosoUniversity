@@ -7,22 +7,29 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using ContosoUniversity.Data;
 using ContosoUniversity.Data.Entities;
+using ContosoUniversity.DTOs;
+using AutoMapper;
 
 namespace ContosoUniversity.Controllers
 {
     public class StudentsController : Controller
     {
         private readonly SchoolContext _context;
+        private readonly IMapper mapper;
 
-        public StudentsController(SchoolContext context)
+        public StudentsController(SchoolContext context, IMapper mapper)
         {
             _context = context;
+            this.mapper = mapper;
         }
 
         // GET: Students
         public async Task<IActionResult> Index()
         {
-            return View(await _context.Students.ToListAsync());
+            var data = await _context.Students.ToListAsync();
+            var listStudents = data.Select(x => mapper.Map<StudentDTO>(x)).ToList();
+
+            return View(listStudents);
         }
 
         // GET: Students/Details/5
@@ -40,7 +47,8 @@ namespace ContosoUniversity.Controllers
                 return NotFound();
             }
 
-            return View(student);
+            var studentDTO = mapper.Map<StudentDTO>(student);
+            return View(studentDTO);
         }
 
         // GET: Students/Create
@@ -54,15 +62,16 @@ namespace ContosoUniversity.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("ID,LastName,FirstMidName,EnrollmentDate")] Student student)
+        public async Task<IActionResult> Create([Bind("ID,LastName,FirstMidName,EnrollmentDate")] StudentDTO studentDTO)
         {
             if (ModelState.IsValid)
             {
+                var student = mapper.Map<Student>(studentDTO);
                 _context.Add(student);
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
             }
-            return View(student);
+            return View(studentDTO);
         }
 
         // GET: Students/Edit/5
@@ -78,7 +87,8 @@ namespace ContosoUniversity.Controllers
             {
                 return NotFound();
             }
-            return View(student);
+            var studentDTO = mapper.Map<StudentDTO>(student);
+            return View(studentDTO);
         }
 
         // POST: Students/Edit/5
@@ -86,34 +96,16 @@ namespace ContosoUniversity.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("ID,LastName,FirstMidName,EnrollmentDate")] Student student)
+        public async Task<IActionResult> Edit(int id, [Bind("ID,LastName,FirstMidName,EnrollmentDate")] StudentDTO studentDTO)
         {
-            if (id != student.ID)
-            {
-                return NotFound();
-            }
-
             if (ModelState.IsValid)
             {
-                try
-                {
-                    _context.Update(student);
-                    await _context.SaveChangesAsync();
-                }
-                catch (DbUpdateConcurrencyException)
-                {
-                    if (!StudentExists(student.ID))
-                    {
-                        return NotFound();
-                    }
-                    else
-                    {
-                        throw;
-                    }
-                }
+                var student = mapper.Map<Student>(studentDTO);
+                _context.Update(student);
+                await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
             }
-            return View(student);
+            return View(studentDTO);
         }
 
         // GET: Students/Delete/5
